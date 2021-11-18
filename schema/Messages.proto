@@ -3,6 +3,7 @@ package mdtapi.rpc.pb;
 
 option cc_enable_arenas = true;
 option optimize_for = SPEED; 
+option go_package = "github.com/spudstr/tater-go;schema";
 
 
 message Value {

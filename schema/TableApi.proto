@@ -1,10 +1,12 @@
 syntax = "proto3";
 package mdtapi.rpc.pb;
 
-import "Messages.proto";
+import "schema/Messages.proto";
 
 option cc_enable_arenas = true;
 option optimize_for = SPEED; 
+option go_package = "github.com/spudstr/tater-go;schema";
+
 
 service TableApi {
   // Authenticate to return a Session Token
