@@ -1,0 +1,233 @@
+syntax = "proto3";
+package mdtapi.rpc.pb;
+
+option cc_enable_arenas = true;
+option optimize_for = SPEED; 
+
+
+message Value {
+   int64 value = 1;
+   enum PriceType 
+   {
+    Unknown =0;
+    resv = 1;
+    Frac_Half                   = 2;
+    Frac_Quarters               = 3;
+    Frac_Eights                 = 4;
+    Frac_Sixtenths              = 5;
+    Frac_ThirtySeconds          = 6;
+    Frac_SixtyFourths           = 7;
+    Frac_OneTwentyEights        = 8;
+    Frac_TwoFiftySixths         = 9;
+    Future_Half                 = 10;
+    Future_Quarters             = 11;
+    Future_Eights               = 12;
+    Future_Sixtenths            = 13;
+    Future_ThirtySeconds        = 14;
+    Future_HalfThirtySeconds    = 15;
+    Future_QuarterThirtySeconds = 16;
+    Future_SixtyFourths         = 17;
+    Future_HalfSixtyFourths     = 18;
+    Future_OneTwentyEights      = 19;
+    Future_TwoFiftySixths       = 20;
+    reserved2                   = 21;
+    reserved3                   = 22;
+    reserved4                   = 23;
+    Whole                       = 24;
+    Decimal1                    = 25;
+    Decimal2                    = 26;
+    Decimal3                    = 27;
+    Decimal4                    = 28;
+    Decimal5                    = 29;
+    Decimal6                    = 30;
+    Decimal7                    = 31;
+    Decimal8                    = 32;
+    Decimal9                    = 33;
+    Decimal10                   = 34;
+    Decimal11                   = 35;
+    Decimal12                   = 36;
+    Decimal13                   = 37;
+    Decimal14                   = 38;
+    Decimal15                   = 39;
+    Decimal16                   = 40;
+    Decimal17                   = 41;
+    Decimal18                   = 42;
+    Decimal19                   = 43;
+   }
+   PriceType priceType = 2;  
+}
+
+message Date{
+   int32 year = 1;
+   int32 month = 2;
+   int32 day = 3;
+}
+
+message MessageHeader {
+  string error_string = 1;
+  int32 protocol = 2;
+  uint64 update_time = 3;
+  uint64 update_time_nanos = 4;
+  uint64 sequence_number = 5;
+  uint64 source_sequence_number = 6;
+  string symbol = 8;
+  uint32 locate_code = 9;
+}
+
+message Quote {
+   MessageHeader header = 1;
+   /// Bid Market Center code
+   string bidMarketCenter = 2;
+   /// Ask Market Center code
+   string askMarketCenter = 3;
+    /// Market Maker ID on Level 2 quotes
+   string marketMaker = 4;
+   /// Bid Price
+   Value bid = 5;
+   /// Bid Size
+   uint32 bidSize = 6;
+   /// Ask Price
+   Value ask = 7;
+   /// Ask Size
+   uint32 askSize = 8;
+   /// Quote Condition
+   uint32 quoteCondition = 9;
+   /// Quote Flags
+   uint32 quoteFlags = 10;
+    /// Extra Bid price information
+   uint32 bidFlags = 11;
+    /// Extra Ask price information
+   uint32 askFlags = 12;
+}
+
+message QuoteSingleSided {
+   MessageHeader header = 1;
+   /// Market Center code
+   string marketCenter = 2;
+    /// Market Maker ID on Level 2 quotes
+   string marketMaker = 4;
+   /// price
+   Value price = 5;
+   /// size
+   uint32 size = 6;
+   /// side 'B' for Bid, 'A' for Ask
+   string side = 7;
+   /// Quote Condition
+   uint32 quoteCondition = 8;
+   /// Quote Flags
+   uint32 quoteFlags = 9;
+    /// Extra price information
+   uint32 priceFlags = 10;
+}
+
+
+message Trade{
+    MessageHeader header = 1;
+    /// Market Center
+    string marketCenter = 2;
+    /// Trade Price
+    Value price = 3;
+    /// Trade size
+    uint64 size = 4;
+    /// ID of trade
+    uint64 tradeId = 5;
+    /// Elgibility of which fields trade updates
+    uint32 eligibilityFlags = 6;
+    /// Extra Information on the Trade (Open, Close, Form-T, etc.)
+    uint32 reportFlags = 7;
+    /// Indicates if it updates Consolidated and/or Market Center information
+    uint32 changeFlags = 8;
+    /// Extra Information on the Price (Cabinet, Notional, etc.)
+    uint32 priceFlags = 9;
+    /// For PriorDay Trades the asofDate and asofTime will be populated
+    Date asOfDate = 10;
+    /// For PriorDay Trades the asofDate and asofTime will be populated
+    uint64 asOfTime =11;
+
+}
+
+message ValueMsg{
+    MessageHeader header = 1;
+    /// Market Center
+    string marketCenter = 2;
+   /// Special flags ex. Start of day, end of day etc.. See QuoddFeed documentation for description
+    uint32 valueFlags = 4;
+    /// For PriorDay data asofDate will be populated
+    Date asOfDate = 5;
+ }
+
+
+ message TradingAction{
+    MessageHeader header = 1;
+    /// Market Center
+    string marketCenter = 2;
+    /// Halted, Active, etc... See (Trading Status Code) in QuoddFeed document for definition of values
+    uint32 tradingStatusCode = 3;
+    /// See Reason Code in QuoddFeed Document for definition of values
+    uint32 reasonCode = 4;
+    /// More detail 
+    string reasondetail = 5;
+    /// 0 for none 1 for MarketWide_Regulartory
+    uint32 tradingActionFlags = 6;
+
+}
+
+ message RegSho{
+    MessageHeader header = 1;
+    /// Market Center
+    string marketCenter = 2;
+    /// Is RegSho in effect
+    bool regShoIndicator = 3;
+    /// 0, for none, 1 for day1 in effect, 2 for day2 in effect
+    uint32 reasonCode = 4;
+    /// 0 for none 1 for MarketWide_Regulartory
+    uint32 tradingActionFlags = 5;
+
+}
+
+message PriceRangeIndication {
+   MessageHeader header = 1;
+   /// Market Center code
+   string marketCenter = 2;
+   /// Low Price
+   Value lowPrice = 3;
+   /// High Price
+   Value highPrice = 4;
+   /// Indication Type (See Price Range Indication type in the QuoddFeed appendix documentation)
+   uint32 indicationType = 5;
+}
+
+// Blank message that will be sent to test for an alive 
+// connection.  
+message HeartBeat {
+  string status_message = 1;
+
+}
+
+message AppendageData{
+  oneof appendage_oneof {
+     bool boolVal = 1;
+     string stringVal = 2;
+     uint32 uintVal = 3;
+     int64 intVal = 4;
+     Value value = 5;
+     Date  date = 6;
+     bytes bytesVal = 7;
+  }
+}
+message MarketDataMessage {
+  oneof message_oneof {
+     Quote quote = 1;
+     Trade trade = 2;
+     ValueMsg value =3;
+     QuoteSingleSided quoteSingleSided = 4;
+     TradingAction tradingAction =5;
+     RegSho regSho = 6;
+     PriceRangeIndication priceRangeIndication = 7;
+     HeartBeat heartBeat = 8;
+   }
+  /// self describing appendages to the message
+  /// the key is the ValueType (FieldId)
+  map<uint32, AppendageData> appendages = 9;
+
+}

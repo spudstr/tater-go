@@ -1,0 +1,41 @@
+syntax = "proto3";
+package mdtapi.rpc.pb;
+
+import "Messages.proto";
+
+option cc_enable_arenas = true;
+option optimize_for = SPEED; 
+
+service TableApi {
+  // Authenticate to return a Session Token
+  rpc Authenticate (AuthRequest) returns (AuthResponse) {}
+
+  // Open a streaming channel
+  rpc StreamData (StreamRequest) returns (stream StreamResponse) {}
+
+}
+
+message AuthRequest {
+  bytes domain = 1;
+  bytes username = 2;
+  bytes password = 3;
+}
+
+message AuthResponse {
+  int64 session_token = 99;
+  string error_string = 1;
+}
+ 
+message StreamRequest {
+  // Specific Channels to Subscribe
+  repeated string channels = 1;
+  // Initial list of subscription patterns
+  repeated bytes keys =2;
+  // Unique token returned from AuthCall
+  int64 session_token = 99;
+}
+
+message StreamResponse {
+  string error_string = 1;
+  MarketDataMessage message = 2;
+}
