@@ -48,7 +48,7 @@ func main() {
 	// call get
 	var streamRequest pb.StreamRequest
 	var keys [][]byte
-	keys = append(keys, []byte("O:TSLA*"))
+	//	keys = append(keys, []byte("O:TSLA*"))
 	keys = append(keys, []byte("O:SPY*"))
 
 	streamRequest.SessionToken = authResp.SessionToken
@@ -56,7 +56,7 @@ func main() {
 
 	stream, _ := stub.StreamData(context.Background(), &streamRequest)
 
-	stop := time.NewTicker(7 * time.Second)
+	stop := time.NewTicker(70 * time.Second)
 
 	for {
 		select {
@@ -66,6 +66,8 @@ func main() {
 				log.Fatalf("can not close stream %v", err.Error())
 			}
 			return
+		case <-stream.Context().Done():
+			log.Fatalf("can not stream data %v", stream.Context().Err())
 		default:
 			data, err := stream.Recv()
 			if err != nil {
