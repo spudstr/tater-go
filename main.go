@@ -3,19 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
-	"io"
 	"log"
 	"os"
+	"time"
 
 	pb "github.com/spudstr/tater-go/schema"
 	"google.golang.org/grpc"
 )
-
-type grc_details struct {
-	domain   string
-	username string
-	password string
-}
 
 func main() {
 	domain := os.Getenv("quodd_domain")
@@ -30,11 +24,11 @@ func main() {
 	// open grpc connection to quodd
 	// dial server
 	conn, err := grpc.Dial(server, grpc.WithInsecure())
-	defer conn.Close()
 
 	if err != nil {
 		log.Fatalf("can not connect with server %v", err)
 	}
+	defer conn.Close()
 
 	// populate Authrequest
 	var authReq pb.AuthRequest
@@ -60,32 +54,26 @@ func main() {
 	streamRequest.SessionToken = authResp.SessionToken
 	streamRequest.Keys = keys
 
-	stream, err := stub.StreamData(context.Background(), &streamRequest)
-	if err != nil {
-		log.Fatalf("can not get with server %v", err)
-	}
+	stream, _ := stub.StreamData(context.Background(), &streamRequest)
 
-	done := make(chan bool)
-	counter := int64(0)
+	stop := time.NewTicker(7 * time.Second)
 
-	go func() {
-		for {
-			resp, err := stream.Recv()
-			if err == io.EOF {
-				done <- true //close(done)
-				return
-			}
+	for {
+		select {
+		case <-stop.C:
+			err := stream.CloseSend()
 			if err != nil {
-				log.Fatalf("can not receive %v", err)
+				log.Fatalf("can not close stream %v", err.Error())
 			}
-			fmt.Printf("%+v\n", counter)
-			counter++
-			log.Printf("1")
-			_ = resp
-		}
-	}()
+			return
+		default:
+			data, err := stream.Recv()
+			if err != nil {
+				panic(err)
+			}
+			fmt.Printf("%+v\n", data)
 
-	<-done
-	log.Printf("Finished")
+		}
+	}
 
 }
