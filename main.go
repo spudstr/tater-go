@@ -3,9 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
 	"log"
 	"os"
-	"time"
 
 	pb "github.com/spudstr/tater-go/schema"
 	"google.golang.org/grpc"
@@ -55,27 +55,25 @@ func main() {
 	streamRequest.Keys = keys
 
 	stream, _ := stub.StreamData(context.Background(), &streamRequest)
+	chanMessages := make(chan interface{}, 10000)
 
-	stop := time.NewTicker(70 * time.Second)
+	go func() {
+		for msgBytes := range chanMessages {
+			fmt.Printf("%+v\n", msgBytes)
+			fmt.Printf("%d\n", len(chanMessages))
+		}
+	}()
 
 	for {
-		select {
-		case <-stop.C:
-			err := stream.CloseSend()
-			if err != nil {
-				log.Fatalf("can not close stream %v", err.Error())
+		var msg interface{}
+		msg, err = stream.Recv()
+		if err != nil {
+			if err == io.EOF {
+				break
 			}
-			return
-		case <-stream.Context().Done():
-			log.Fatalf("can not stream data %v", stream.Context().Err())
-		default:
-			data, err := stream.Recv()
-			if err != nil {
-				panic(err)
-			}
-			fmt.Printf("%+v\n", data)
-
+			log.Fatalf("can not read stream %v", err)
 		}
+		chanMessages <- msg
 	}
 
 }
